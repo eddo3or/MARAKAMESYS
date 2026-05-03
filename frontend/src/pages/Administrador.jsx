@@ -73,7 +73,7 @@ function Administrador() {
       <aside style={styles.sidebar}>
         <div style={styles.logo}>
           <span style={styles.logoText}>MARAKAME</span>
-          <span style={styles.logoSub}>SISTEMA DE ADMINISTRACIÓN</span>
+          <span style={styles.logoSub}>CLÍNICA DE DESINTOXICACIÓN</span>
         </div>
         <nav style={styles.nav}>
           {[
@@ -108,12 +108,12 @@ function Administrador() {
       <main style={styles.main}>
         {/* Top Bar */}
         <header style={styles.topBar}>
-          <div style={styles.breadcrumb}>Administración / Compras</div>
+          
           <div style={styles.topTabs}>
             {["Requisiciones", "Cotizaciones", "Orden de compra", "Reporte de compra"].map((tab) => {
   let ruta = "#";
 
-  if (tab === "Requisiciones") ruta = "/administrador";
+  if (tab === "Requisiciones") ruta = "/";
   if (tab === "Cotizaciones") ruta = "/cotizaciones";
   if (tab === "Orden de compra") ruta = "/orden";
   if (tab === "Reporte de compra") ruta = "/reporte";
@@ -403,7 +403,7 @@ const styles = {
     flexShrink: 0,
   },
   logo: {
-    padding: "20px 16px 16px",
+    padding: "20px 16px 14px",
     borderBottom: "1px solid #2d3748",
     marginBottom: 8,
   },
@@ -417,9 +417,10 @@ const styles = {
   logoSub: {
     display: "block",
     fontSize: 8,
-    letterSpacing: 1,
+    letterSpacing: 0.8,
     color: "#718096",
     marginTop: 2,
+    textTransform: "uppercase",
   },
   nav: { flex: 1 },
   navSection: {

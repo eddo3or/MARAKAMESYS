@@ -82,12 +82,12 @@ export default function OrdenDeCompra() {
       <main style={styles.main}>
         {/* Top Bar */}
         <header style={styles.topBar}>
-          <div style={styles.breadcrumb}>Administración / Orden de compra</div>
+
           <div style={styles.topTabs}>
             {["Requisiciones", "Cotizaciones", "Orden de compra", "Reporte de compra"].map((tab) => {
   let ruta = "#";
 
-  if (tab === "Requisiciones") ruta = "/administrador";
+  if (tab === "Requisiciones") ruta = "/";
   if (tab === "Cotizaciones") ruta = "/cotizaciones";
   if (tab === "Orden de compra") ruta = "/orden";
   if (tab === "Reporte de compra") ruta = "/reporte";
@@ -270,12 +270,30 @@ const styles = {
     marginBottom: 8,
   },
   logoText: { display: "block", fontWeight: 800, fontSize: 16, letterSpacing: 2, color: "#63b3ed" },
-  logoSub: { display: "block", fontSize: 7.5, letterSpacing: 0.8, color: "#718096", marginTop: 2, textTransform: "uppercase" },
+  logoSub: { display: "block", fontSize: 8, letterSpacing: 0.8, color: "#718096", marginTop: 2, textTransform: "uppercase" },
   nav: { flex: 1 },
-  navSection: { padding: "10px 16px 6px", fontSize: 11, fontWeight: 700, color: "#a0aec0", letterSpacing: 0.5, textTransform: "uppercase" },
-  navIcon: { marginRight: 6, fontSize: 12 },
-  navItem: { padding: "7px 16px 7px 24px", cursor: "pointer", fontSize: 12, color: "#cbd5e0", display: "flex", alignItems: "center" },
-  navItemActive: { background: "#2b6cb0", color: "#fff", fontWeight: 600, borderLeft: "3px solid #63b3ed", paddingLeft: 21 },
+  navSection: {
+    padding: "10px 16px 4px",
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#a0aec0",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  navItem: {
+    padding: "7px 16px 7px 28px",
+    cursor: "pointer",
+    fontSize: 12,
+    color: "#cbd5e0",
+    borderRadius: 0,
+    transition: "background 0.15s",
+  },
+  navItemActive: {
+    background: "#2b6cb0",
+    color: "#fff",
+    fontWeight: 600,
+    borderLeft: "3px solid #63b3ed",
+  },
   sidebarUser: { display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderTop: "1px solid #2d3748", marginTop: 16 },
   avatar: { width: 32, height: 32, borderRadius: "50%", background: "#4299e1", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 10, color: "#fff", flexShrink: 0 },
   userName: { fontWeight: 600, fontSize: 12 },
@@ -289,7 +307,7 @@ const styles = {
   content: { padding: "20px 24px", flex: 1, display: "flex", flexDirection: "column", gap: 14 },
   pageHeader: { display: "flex", alignItems: "flex-start", justifyContent: "space-between" },
   pageTitle: { fontSize: 18, fontWeight: 800, margin: 0, color: "#1a202c" },
-  folio: { fontSize: 11, color: "#a0aec0", marginTop: 3 },
+  folio: { fontSize: 12, color: "#8d99a8", marginTop: 3 ,fontWeight: "bold"},
   enviarBtn: {
     display: "flex", alignItems: "center", gap: 8,
     background: "#ebf8ff", border: "1.5px solid #bee3f8",

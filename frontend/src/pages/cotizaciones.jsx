@@ -80,12 +80,12 @@ export default function Cotizaciones() {
       <main style={styles.main}>
         {/* Top Bar */}
         <header style={styles.topBar}>
-          <div style={styles.breadcrumb}>Administración / Cotizaciones</div>
+          
           <div style={styles.topTabs}>
             {["Requisiciones", "Cotizaciones", "Orden de compra", "Reporte de compra"].map((tab) => {
   let ruta = "#";
 
-  if (tab === "Requisiciones") ruta = "/administrador";
+  if (tab === "Requisiciones") ruta = "/";
   if (tab === "Cotizaciones") ruta = "/cotizaciones";
   if (tab === "Orden de compra") ruta = "/orden";
   if (tab === "Reporte de compra") ruta = "/reporte";
@@ -252,7 +252,7 @@ const styles = {
   },
   logoSub: {
     display: "block",
-    fontSize: 7.5,
+    fontSize: 8,
     letterSpacing: 0.8,
     color: "#718096",
     marginTop: 2,
@@ -260,28 +260,26 @@ const styles = {
   },
   nav: { flex: 1 },
   navSection: {
-    padding: "10px 16px 6px",
+    padding: "10px 16px 4px",
     fontSize: 11,
     fontWeight: 700,
     color: "#a0aec0",
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
-  navIcon: { marginRight: 6, fontSize: 12 },
   navItem: {
-    padding: "7px 16px 7px 24px",
+    padding: "7px 16px 7px 28px",
     cursor: "pointer",
     fontSize: 12,
     color: "#cbd5e0",
-    display: "flex",
-    alignItems: "center",
+    borderRadius: 0,
+    transition: "background 0.15s",
   },
   navItemActive: {
     background: "#2b6cb0",
     color: "#fff",
     fontWeight: 600,
     borderLeft: "3px solid #63b3ed",
-    paddingLeft: 21,
   },
   sidebarUser: {
     display: "flex",
@@ -342,7 +340,7 @@ const styles = {
     marginBottom: 18,
   },
   pageTitle: { fontSize: 18, fontWeight: 800, margin: 0, color: "#1a202c" },
-  reqId: { fontSize: 11, color: "#a0aec0", marginTop: 3 },
+  reqId: { fontSize: 12, color: "#8d99a8", marginTop: 3 ,fontWeight: "bold"},
   aprobarBtn: {
     display: "flex",
     alignItems: "center",
