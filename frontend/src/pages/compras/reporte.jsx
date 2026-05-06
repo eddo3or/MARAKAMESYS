@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import Sidebar from "../../components/Sidebar";
 
 const FOLIOS = [
   {
@@ -41,37 +42,7 @@ export default function ReporteDeCompra() {
   return (
     <div style={styles.page}>
       {/* Sidebar */}
-      <aside style={styles.sidebar}>
-        <div style={styles.logo}>
-          <span style={styles.logoText}>MARAKAME</span>
-          <span style={styles.logoSub}>CLÍNICA DE DESINTOXICACIÓN</span>
-        </div>
-        <nav style={styles.nav}>
-          <div style={styles.navSection}>🏢 Administrativo</div>
-          {["Finanzas", "Recursos Humanos", "Compras", "Recursos Materiales"].map((item) => (
-            <div
-              key={item}
-              style={{
-                ...styles.navItem,
-                ...(item === "Compras" ? styles.navItemActive : {}),
-              }}
-            >
-              {item === "Finanzas" && <span style={styles.navIcon}></span>}
-              {item === "Recursos Humanos" && <span style={styles.navIcon}></span>}
-              {item === "Compras" && <span style={styles.navIcon}></span>}
-              {item === "Recursos Materiales" && <span style={styles.navIcon}></span>}
-              {item}
-            </div>
-          ))}
-        </nav>
-        <div style={styles.sidebarUser}>
-          <div style={styles.avatar}>Dr. A</div>
-          <div>
-            <div style={styles.userName}>Dr. Arreola</div>
-            <div style={styles.userRole}>Director Médico</div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar styles={styles} />
 
       {/* Main */}
       <main style={styles.main}>

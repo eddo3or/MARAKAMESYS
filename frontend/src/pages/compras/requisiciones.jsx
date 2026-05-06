@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { createRequisicion } from "../../api/requisiciones"; // Ajusta la ruta según tu estructura
+import Sidebar from "../../components/Sidebar";
+
 
 const TIPO_COMPRA = ["Ordinaria", "Extraordinaria"];
 const DEPARTAMENTOS = ["Clínico", "Administrativo", "Clinica", "Medica", "Admisiones"];
@@ -192,39 +193,7 @@ export default function Requisiciones() {
   return (
     <div style={styles.page}>
       {/* Sidebar */}
-      <aside style={styles.sidebar}>
-        <div style={styles.logo}>
-          <span style={styles.logoText}>MARAKAME</span>
-          <span style={styles.logoSub}>CLÍNICA DE DESINTOXICACIÓN</span>
-        </div>
-        <nav style={styles.nav}>
-          {[
-            { label: "Administrativo", icon: "🏢", children: ["Finanzas", "Recursos Humanos", "Compras", "Recursos Materiales"] },
-          ].map((section) => (
-            <div key={section.label}>
-              <div style={styles.navSection}>{section.icon} {section.label}</div>
-              {section.children.map((child) => (
-                <div
-                  key={child}
-                  style={{
-                    ...styles.navItem,
-                    ...(child === "Compras" ? styles.navItemActive : {}),
-                  }}
-                >
-                  {child}
-                </div>
-              ))}
-            </div>
-          ))}
-        </nav>
-        <div style={styles.sidebarUser}>
-          <div style={styles.avatar}>Dr. A</div>
-          <div>
-            <div style={styles.userName}>Dr. Artemio</div>
-            <div style={styles.userRole}>Director médico</div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar styles={styles} />
 
       {/* Main */}
       <main style={styles.main}>

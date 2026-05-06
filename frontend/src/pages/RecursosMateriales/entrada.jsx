@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import Sidebar from "../../components/Sidebar";
 
 const ORDEN = {
   folio: "OC-2026-001",
@@ -8,8 +9,24 @@ const ORDEN = {
 };
 
 const ITEMS_INICIALES = [
-  { id: "INV-0923", descripcion: "Guantes de nitrilo azules", unidad: "PZAS", cantEsperada: 200, cantRecibida: 199 },
-  { id: "MSZ-932H", descripcion: "Mascarillas azules", unidad: "PZAS", cantEsperada: 150, cantRecibida: 0 },
+  { 
+    id: "INV-0923", 
+    descripcion: "Guantes de nitrilo azules", 
+    unidad: "PZAS", 
+    cantEsperada: 200, 
+    cantRecibida: 0,
+    categoria: "Insumos",
+    caducidad: ""
+  },
+  { 
+    id: "MSZ-932H", 
+    descripcion: "Mascarillas azules", 
+    unidad: "PZAS", 
+    cantEsperada: 150, 
+    cantRecibida: 0,
+    categoria: "Insumos",
+    caducidad: ""
+  },
 ];
 
 export default function EntradaAlmacen() {
@@ -17,12 +34,34 @@ export default function EntradaAlmacen() {
   const [nombreChofer, setNombreChofer] = useState("");
   const [evidencia, setEvidencia] = useState(null);
   const [items, setItems] = useState(ITEMS_INICIALES);
+  
+  const CATEGORIAS = [
+  "Medicamentos",
+  "Controlados",
+  "Insumos",
+  "Limpieza",
+  "Oficina"
+];
 
   const location = useLocation();
 
   const actualizarCantidad = (id, valor) => {
-    setItems(items.map((i) => (i.id === id ? { ...i, cantRecibida: Number(valor) } : i)));
-  };
+  setItems(items.map((i) => {
+    if (i.id === id) {
+      return {
+        ...i,
+        cantRecibida: valor === "" ? "" : Number(valor)
+      };
+    }
+    return i;
+  }));
+};
+
+  const actualizarCampo = (id, campo, valor) => {
+  setItems(items.map(i => 
+    i.id === id ? { ...i, [campo]: valor } : i
+  ));
+};
 
   const pendientes = items.filter((i) => i.cantRecibida < i.cantEsperada).length;
   const completo = pendientes === 0;
@@ -36,27 +75,7 @@ export default function EntradaAlmacen() {
   return (
     <div style={styles.page}>
       {/* Sidebar */}
-      <aside style={styles.sidebar}>
-        <div style={styles.logo}>
-          <span style={styles.logoText}>MARAKAME</span>
-          <span style={styles.logoSub}>CLÍNICA DE DESINTOXICACIÓN</span>
-        </div>
-        <nav style={styles.nav}>
-          <div style={styles.navSection}>Administrativo</div>
-          {["Finanzas", "Recursos Humanos", "Compras", "Recursos Materiales"].map((label) => (
-            <div key={label} style={{ ...styles.navItem, ...(label === "Recursos Materiales" ? styles.navItemActive : {}) }}>
-              {label}
-            </div>
-          ))}
-        </nav>
-        <div style={styles.sidebarUser}>
-          <div style={styles.avatar}>Dr. A</div>
-          <div>
-            <div style={styles.userName}>Dr. Arreola</div>
-            <div style={styles.userRole}>Director Médico</div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar styles={styles} />
 
       {/* Main */}
       <main style={styles.main}>
@@ -154,9 +173,17 @@ export default function EntradaAlmacen() {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  {["ID", "DESCRIPCION DEL MATERIAL", "UNIDAD", "CANT. ESPERADA", "CANT. RECIBIDA"].map((col) => (
-                    <th key={col} style={styles.th}>{col}</th>
-                  ))}
+                  {[
+  "ID",
+  "DESCRIPCION DEL MATERIAL",
+  "UNIDAD",
+  "CATEGORIA",
+  "F. CADUCIDAD",
+  "CANT. ESPERADA",
+  "CANT. RECIBIDA"
+].map((col) => (
+  <th key={col} style={styles.th}>{col}</th>
+))}
                 </tr>
               </thead>
               <tbody>
@@ -164,26 +191,53 @@ export default function EntradaAlmacen() {
                   const diff = row.cantRecibida < row.cantEsperada;
                   return (
                     <tr key={row.id} style={styles.tr}>
-                      <td style={styles.td}>{row.id}</td>
-                      <td style={styles.td}>{row.descripcion}</td>
-                      <td style={styles.td}>{row.unidad}</td>
-                      <td style={styles.td}>{row.cantEsperada}</td>
-                      <td style={styles.td}>
-                        <input
-                          type="number"
-                          min={0}
-                          max={row.cantEsperada}
-                          value={row.cantRecibida}
-                          onChange={(e) => actualizarCantidad(row.id, e.target.value)}
-                          style={{
-                            ...styles.cantInput,
-                            borderColor: diff ? "#feb2b2" : "#9ae6b4",
-                            background: diff ? "#fff5f5" : "#f0fff4",
-                            color: diff ? "#c53030" : "#276749",
-                          }}
-                        />
-                      </td>
-                    </tr>
+  <td style={styles.td}>{row.id}</td>
+
+  <td style={styles.td}>{row.descripcion}</td>
+
+  <td style={styles.td}>{row.unidad}</td>
+
+  {/* CATEGORIA */}
+  <td style={styles.td}>
+    <select
+      value={row.categoria}
+      onChange={(e) => actualizarCampo(row.id, "categoria", e.target.value)}
+      style={styles.input}
+    >
+      {CATEGORIAS.map(cat => (
+        <option key={cat}>{cat}</option>
+      ))}
+    </select>
+  </td>
+
+  {/* FECHA CADUCIDAD */}
+  <td style={styles.td}>
+    <input
+      type="date"
+      value={row.caducidad}
+      onChange={(e) => actualizarCampo(row.id, "caducidad", e.target.value)}
+      style={styles.input}
+    />
+  </td>
+
+  <td style={styles.td}>{row.cantEsperada}</td>
+
+  <td style={styles.td}>
+    <input
+      type="number"
+      min={0}
+      max={row.cantEsperada}
+      value={row.cantRecibida}
+      onChange={(e) => actualizarCantidad(row.id, e.target.value)}
+      style={{
+        ...styles.cantInput,
+        borderColor: row.cantRecibida < row.cantEsperada ? "#feb2b2" : "#9ae6b4",
+        background: row.cantRecibida < row.cantEsperada ? "#fff5f5" : "#f0fff4",
+        color: row.cantRecibida < row.cantEsperada ? "#c53030" : "#276749",
+      }}
+    />
+  </td>
+</tr>
                   );
                 })}
               </tbody>

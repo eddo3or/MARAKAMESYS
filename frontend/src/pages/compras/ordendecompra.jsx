@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Sidebar from "../../components/Sidebar";
 
 
 export default function OrdenDeCompra() {
@@ -44,39 +45,7 @@ export default function OrdenDeCompra() {
   return (
     <div style={styles.page}>
       {/* Sidebar */}
-      <aside style={styles.sidebar}>
-        <div style={styles.logo}>
-          <span style={styles.logoText}>MARAKAME</span>
-          <span style={styles.logoSub}>CLÍNICA DE DESINTOXICACIÓN</span>
-        </div>
-        <nav style={styles.nav}>
-          <div style={styles.navSection}>🏢 Administrativo</div>
-          {[
-            { label: "Finanzas", icon: "" },
-            { label: "Recursos Humanos", icon: "" },
-            { label: "Compras", icon: "" },
-            { label: "Recursos Materiales", icon: "" },
-          ].map(({ label, icon }) => (
-            <div
-              key={label}
-              style={{
-                ...styles.navItem,
-                ...(label === "Compras" ? styles.navItemActive : {}),
-              }}
-            >
-              <span style={styles.navIcon}>{icon}</span>
-              {label}
-            </div>
-          ))}
-        </nav>
-        <div style={styles.sidebarUser}>
-          <div style={styles.avatar}>Dr. A</div>
-          <div>
-            <div style={styles.userName}>Dr. Arreola</div>
-            <div style={styles.userRole}>Director Médico</div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar styles={styles} />
 
       {/* Main */}
       <main style={styles.main}>

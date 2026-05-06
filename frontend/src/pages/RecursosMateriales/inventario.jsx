@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import Sidebar from "../../components/Sidebar";
 
 
 
@@ -49,33 +50,7 @@ export default function Inventario() {
   return (
     <div style={styles.page}>
       {/* Sidebar */}
-      <aside style={styles.sidebar}>
-        <div style={styles.logo}>
-          <span style={styles.logoText}>MARAKAME</span>
-          <span style={styles.logoSub}>CLÍNICA DE DESINTOXICACIÓN</span>
-        </div>
-        <nav style={styles.nav}>
-          <div style={styles.navSection}>Administrativo</div>
-          {["Finanzas", "Recursos Humanos", "Compras", "Recursos Materiales"].map((label) => (
-            <div
-              key={label}
-              style={{
-                ...styles.navItem,
-                ...(label === "Recursos Materiales" ? styles.navItemActive : {}),
-              }}
-            >
-              {label}
-            </div>
-          ))}
-        </nav>
-        <div style={styles.sidebarUser}>
-          <div style={styles.avatar}>Dr. A</div>
-          <div>
-            <div style={styles.userName}>Dr. Arreola</div>
-            <div style={styles.userRole}>Director Médico</div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar styles={styles} />
 
       {/* Main */}
       <main style={styles.main}>
