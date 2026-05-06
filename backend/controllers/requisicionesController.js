@@ -1,32 +1,41 @@
 import db from "../bd/db.js";
 
-// 🔹 Obtener todas
-export const getRequisiciones = async (req, res) => {
+export const crearRequisicion = async (req, res) => {
   try {
-    const [rows] = await db.query(`
-      SELECT r.*, e.nombre_completo
-      FROM requisiciones r
-      JOIN empleados e ON r.id_empleado = e.id
-    `);
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json(error);
-  }
-};
+    const {
+      folio,
+      id_solicitante,
+      fecha_emision,
+      tipo_compra,
+      justificacion,
+      estatus,
+      articulos
+    } = req.body;
 
-// 🔹 Crear requisición
-export const createRequisicion = async (req, res) => {
-  try {
-    const { folio, fecha, id_empleado, estado } = req.body;
-
-    await db.query(
-      `INSERT INTO requisiciones (folio, fecha, id_empleado, estado)
-       VALUES (?, ?, ?, ?)`,
-      [folio, fecha, id_empleado, estado]
+    // 1. Insertar requisición
+    const [result] = await db.query(
+      `INSERT INTO requisiciones 
+      (folio, id_solicitante, fecha_emision, tipo_compra, justificacion, estatus) 
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      [folio, id_solicitante, fecha_emision, tipo_compra, justificacion, estatus]
     );
 
-    res.json({ message: "Requisición creada" });
+    const id_requisicion = result.insertId;
+
+    // 2. Insertar artículos
+    for (const art of articulos) {
+      await db.query(
+        `INSERT INTO requisicion_detalle 
+        (id_requisicion, descripcion, cantidad, unidad) 
+        VALUES (?, ?, ?, ?)`,
+        [id_requisicion, art.descripcion, art.cantidad, art.unidad]
+      );
+    }
+
+    res.json({ message: "Requisición creada correctamente" });
+
   } catch (error) {
-    res.status(500).json(error);
+    console.error(error);
+    res.status(500).json({ message: "Error en servidor" });
   }
 };

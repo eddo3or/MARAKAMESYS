@@ -52,6 +52,8 @@ const Login = () => {
 
       // Guardar usuario en localStorage
       localStorage.setItem('user', JSON.stringify(data.user));
+      console.log("Guardado:", data.user);
+
 
       // 🔥 REDIRECCIÓN
       navigate('/requisiciones');
@@ -94,7 +96,7 @@ const Login = () => {
 
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" disabled={loading}>
+          <button className='login-button' type="submit" disabled={loading}>
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>

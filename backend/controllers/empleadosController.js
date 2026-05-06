@@ -30,10 +30,14 @@ export const loginEmpleado = async (req, res) => {
     );
 
     res.json({
-      message: "Login correcto",
-      token,
-      empleado,
-    });
+  message: "Login exitoso",
+  user: {
+    id: empleado.id_empleado,
+    nombre: empleado.nombre_completo,
+    puesto: empleado.puesto,
+    autorizador: empleado.es_autorizador
+  }
+});
 
   } catch (error) {
     console.error(error);
@@ -53,7 +57,7 @@ export const createEmpleado = async (req, res) => {
       id_departamento
     });
 
-    res.json({ message: "Empleado creado 🔥" });
+    res.json({ message: "Empleado creado" });
 
   } catch (error) {
     console.error(error);

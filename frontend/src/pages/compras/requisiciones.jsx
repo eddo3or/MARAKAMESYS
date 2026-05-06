@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createRequisicion } from "../../api/requisiciones"; // Ajusta la ruta según tu estructura
 
@@ -14,8 +14,6 @@ const FLUJO_APROBACION = [
 ];
 
 const initialArticulos = [
-  { id: 1, descripcion: "Artículo clínico #1", cantidad: 2, unidad: "Piez" },
-  { id: 2, descripcion: "Artículo clínico #2", cantidad: 3, unidad: "Piez" },
 ];
 
 // Función para obtener la fecha actual en formato YYYY-MM-DD (para el backend)
@@ -56,9 +54,23 @@ export default function Requisiciones() {
   const [firmado, setFirmado] = useState(false);
   const [errorJustificacion, setErrorJustificacion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [usuario, setUsuario] = useState(null);
 
-  // Obtener id_solicitante del usuario logueado (ejemplo, ajusta según tu autenticación)
-  const id_solicitante = 123; // Esto debería venir de tu contexto/auth
+
+  useEffect(() => {
+  const user = localStorage.getItem("user");
+
+  if (user && user !== "undefined") {
+    try {
+      setUsuario(JSON.parse(user));
+    } catch (error) {
+      console.error("Error parseando user:", error);
+      localStorage.removeItem("user"); // limpia dato corrupto
+    }
+  }
+}, []);
+
+
 
   const agregarArticulo = () => {
     if (!nuevoArticulo.trim()) return;
@@ -99,63 +111,77 @@ export default function Requisiciones() {
   };
 
   const handleEnviar = async () => {
-    // Validar si es extraordinaria y no hay justificación
-    if (tipoCompra === "Extraordinaria" && !justificacion.trim()) {
-      setErrorJustificacion("⚠️ La justificación es obligatoria para compras extraordinarias");
-      document.getElementById('justificacion-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-    
-    // Validar que haya al menos un artículo
-    if (articulos.length === 0) {
-      alert("⚠️ Debes agregar al menos un artículo");
-      return;
+  // Validaciones (las tuyas intactas)
+  if (tipoCompra === "Extraordinaria" && !justificacion.trim()) {
+    setErrorJustificacion("⚠️ La justificación es obligatoria para compras extraordinarias");
+    document.getElementById('justificacion-textarea')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  if (articulos.length === 0) {
+    alert("⚠️ Debes agregar al menos un artículo");
+    return;
+  }
+
+  if (!firmado) {
+    alert("⚠️ Debes subir la firma del solicitante autorizado");
+    return;
+  }
+
+  setErrorJustificacion("");
+  setIsLoading(true);
+
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    // 🔥 Tu objeto original (NO lo rompemos)
+    const requisicionData = {
+      folio: generarFolio(),
+      id_solicitante: user?.id, // 👈 dinámico
+      fecha_emision: getFechaActualBackend(),
+      tipo_compra: tipoCompra,
+      justificacion: justificacion,
+      estatus: "Pendiente",
+
+      // 👇 NUEVO (esto es lo que te faltaba)
+      articulos: articulos.map(a => ({
+        descripcion: a.descripcion,
+        cantidad: a.cantidad,
+        unidad: a.unidad
+      }))
+    };
+
+    console.log("ENVIANDO 👉", requisicionData);
+
+    const response = await fetch("http://localhost:3000/api/requisiciones", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requisicionData)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Error al enviar requisición");
     }
 
-    // Validar que la firma esté hecha
-    if (!firmado) {
-      alert("⚠️ Debes subir la firma del solicitante autorizado");
-      return;
-    }
-    
-    setErrorJustificacion("");
-    setIsLoading(true);
+    alert(" Requisición enviada correctamente");
 
-    try {
-      // Preparar datos según la estructura de tu backend
-      const requisicionData = {
-  folio: generarFolio(),
-  id_solicitante: id_solicitante,
-  fecha_emision: getFechaActualBackend(),
-  tipo_compra: tipoCompra,
-  justificacion: justificacion,
-  estatus: "Pendiente"
+    
+    setArticulos([]);
+    setJustificacion("");
+    setFirmado(false);
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al enviar requisición");
+  } finally {
+    setIsLoading(false);
+  }
 };
-
-      console.log("Enviando requisición:", requisicionData);
-
-      // Usar la función de API que ya tienes
-      const result = await createRequisicion(requisicionData);
-      
-      console.log("Respuesta del servidor:", result);
-      
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      
-      // Mostrar mensaje de éxito
-      alert(`✅ Requisición enviada correctamente\nFolio: ${requisicionData.folio}\n${result.id_requisicion ? `ID: ${result.id_requisicion}` : ''}`);
-      
-      // Resetear formulario
-      resetFormulario();
-      
-    } catch (error) {
-      console.error('Error detallado:', error);
-      alert(`❌ Error al enviar la requisición: ${error.message || 'Error de conexión con el servidor'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCancelar = () => {
     if (window.confirm("¿Estás seguro de que deseas cancelar? Se perderán todos los datos.")) {
@@ -455,8 +481,13 @@ export default function Requisiciones() {
                     Solicitante autorizado
                     <span style={styles.verificadoBadge}>✔ Verificado</span>
                   </div>
-                  <div style={styles.solicitanteNombre}>Dr. Arámbulo Pascual Pérez</div>
-                  <div style={styles.solicitanteCargo}>Director médico</div>
+                  <div style={styles.solicitanteNombre}>
+  {usuario ? usuario.nombre : "Cargando..."}
+</div>
+
+<div style={styles.solicitanteCargo}>
+  {usuario?.puesto || "Usuario del sistema"}
+</div>
                 </div>
               </section>
 

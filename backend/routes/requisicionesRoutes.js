@@ -1,12 +1,8 @@
-import { Router } from "express";
-import {
-  getRequisiciones,
-  createRequisicion
-} from "../controllers/requisicionesController.js";
+import express from "express";
+import { crearRequisicion } from "../controllers/requisicionesController.js";
 
-const router = Router();
+const router = express.Router();
 
-router.get("/", getRequisiciones);
-router.post("/", createRequisicion);
+router.post("/", crearRequisicion);
 
 export default router;
