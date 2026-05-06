@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { createRequisicion } from "../../api/requisiciones"; // Ajusta la ruta según tu estructura
 
-const PRIORIDADES = ["Normal", "Urgente", "Crítico"];
+const TIPO_COMPRA = ["Ordinaria", "Extraordinaria"];
 const DEPARTAMENTOS = ["Clínico", "Administrativo", "Clinica", "Medica", "Admisiones"];
 const UNIDADES = ["Piez", "Caja", "Litro", "Kg", "Metro"];
 
@@ -18,38 +18,58 @@ const initialArticulos = [
   { id: 2, descripcion: "Artículo clínico #2", cantidad: 3, unidad: "Piez" },
 ];
 
+// Función para obtener la fecha actual en formato YYYY-MM-DD (para el backend)
+const getFechaActualBackend = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Función para obtener la fecha actual en formato DD/MM/YYYY (para mostrar)
+const getFechaActualDisplay = () => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const year = today.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+// Función para generar folio único
+const generarFolio = () => {
+  const fecha = new Date();
+  const año = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `REQ-${año}${mes}${dia}-${random}`;
+};
+
 export default function Requisiciones() {
   const [nuevoArticulo, setNuevoArticulo] = useState("");
-
-  const [fecha, setFecha] = useState("10/07/2026");
+  const [fecha, setFecha] = useState(getFechaActualDisplay());
   const [departamento, setDepartamento] = useState("Clínico");
-  const [prioridad, setPrioridad] = useState("Crítico");
+  const [tipoCompra, setTipoCompra] = useState("Ordinaria");
   const [articulos, setArticulos] = useState(initialArticulos);
   const [justificacion, setJustificacion] = useState("");
   const [firmado, setFirmado] = useState(false);
+  const [errorJustificacion, setErrorJustificacion] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Obtener id_solicitante del usuario logueado (ejemplo, ajusta según tu autenticación)
+  const id_solicitante = 123; // Esto debería venir de tu contexto/auth
 
   const agregarArticulo = () => {
-  if (!nuevoArticulo.trim()) return;
+    if (!nuevoArticulo.trim()) return;
 
-  setArticulos([
-    ...articulos,
-    { id: Date.now(), descripcion: nuevoArticulo, cantidad: 1, unidad: "Piez" },
-  ]);
+    setArticulos([
+      ...articulos,
+      { id: Date.now(), descripcion: nuevoArticulo, cantidad: 1, unidad: "Piez" },
+    ]);
 
-  setNuevoArticulo(""); // limpiar input
-};
-function Administrador() {
-  return (
-    <div>
-      <h1>Panel Administrador</h1>
-
-      <Link to="/Cotizaciones">
-        Ir a cotizaciones
-      </Link>
-
-    </div>
-  );
-}
+    setNuevoArticulo("");
+  };
 
   const actualizarArticulo = (id, campo, valor) => {
     setArticulos(articulos.map((a) => (a.id === id ? { ...a, [campo]: valor } : a)));
@@ -65,6 +85,82 @@ function Administrador() {
         a.id === id ? { ...a, cantidad: Math.max(1, a.cantidad + delta) } : a
       )
     );
+  };
+
+  const resetFormulario = () => {
+    setFecha(getFechaActualDisplay());
+    setDepartamento("Clínico");
+    setTipoCompra("Ordinaria");
+    setArticulos(initialArticulos);
+    setJustificacion("");
+    setFirmado(false);
+    setErrorJustificacion("");
+    setNuevoArticulo("");
+  };
+
+  const handleEnviar = async () => {
+    // Validar si es extraordinaria y no hay justificación
+    if (tipoCompra === "Extraordinaria" && !justificacion.trim()) {
+      setErrorJustificacion("⚠️ La justificación es obligatoria para compras extraordinarias");
+      document.getElementById('justificacion-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    
+    // Validar que haya al menos un artículo
+    if (articulos.length === 0) {
+      alert("⚠️ Debes agregar al menos un artículo");
+      return;
+    }
+
+    // Validar que la firma esté hecha
+    if (!firmado) {
+      alert("⚠️ Debes subir la firma del solicitante autorizado");
+      return;
+    }
+    
+    setErrorJustificacion("");
+    setIsLoading(true);
+
+    try {
+      // Preparar datos según la estructura de tu backend
+      const requisicionData = {
+  folio: generarFolio(),
+  id_solicitante: id_solicitante,
+  fecha_emision: getFechaActualBackend(),
+  tipo_compra: tipoCompra,
+  justificacion: justificacion,
+  estatus: "Pendiente"
+};
+
+      console.log("Enviando requisición:", requisicionData);
+
+      // Usar la función de API que ya tienes
+      const result = await createRequisicion(requisicionData);
+      
+      console.log("Respuesta del servidor:", result);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      // Mostrar mensaje de éxito
+      alert(`✅ Requisición enviada correctamente\nFolio: ${requisicionData.folio}\n${result.id_requisicion ? `ID: ${result.id_requisicion}` : ''}`);
+      
+      // Resetear formulario
+      resetFormulario();
+      
+    } catch (error) {
+      console.error('Error detallado:', error);
+      alert(`❌ Error al enviar la requisición: ${error.message || 'Error de conexión con el servidor'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelar = () => {
+    if (window.confirm("¿Estás seguro de que deseas cancelar? Se perderán todos los datos.")) {
+      resetFormulario();
+    }
   };
 
   return (
@@ -108,29 +204,28 @@ function Administrador() {
       <main style={styles.main}>
         {/* Top Bar */}
         <header style={styles.topBar}>
-          
           <div style={styles.topTabs}>
             {["Requisiciones", "Cotizaciones", "Orden de compra", "Reporte de compra"].map((tab) => {
-  let ruta = "#";
+              let ruta = "#";
 
-  if (tab === "Requisiciones") ruta = "/";
-  if (tab === "Cotizaciones") ruta = "/cotizaciones";
-  if (tab === "Orden de compra") ruta = "/orden";
-  if (tab === "Reporte de compra") ruta = "/reporte";
+              if (tab === "Requisiciones") ruta = "/requisiciones";
+              if (tab === "Cotizaciones") ruta = "/cotizaciones";
+              if (tab === "Orden de compra") ruta = "/orden";
+              if (tab === "Reporte de compra") ruta = "/reporte";
 
-  return (
-    <Link key={tab} to={ruta} style={{ textDecoration: "none" }}>
-      <button
-        style={{
-          ...styles.tab,
-          ...(tab === "Requisiciones" ? styles.tabActive : {}),
-        }}
-      >
-        {tab}
-      </button>
-    </Link>
-  );
-})}
+              return (
+                <Link key={tab} to={ruta} style={{ textDecoration: "none" }}>
+                  <button
+                    style={{
+                      ...styles.tab,
+                      ...(tab === "Requisiciones" ? styles.tabActive : {}),
+                    }}
+                  >
+                    {tab}
+                  </button>
+                </Link>
+              );
+            })}
           </div>
         </header>
 
@@ -152,12 +247,19 @@ function Administrador() {
                     <label style={styles.label}>Fecha de solicitud</label>
                     <div style={styles.inputWithIcon}>
                       <input
-                        style={styles.input}
+                        style={{
+                          ...styles.input,
+                          backgroundColor: '#edf2f7',
+                          color: '#718096',
+                          cursor: 'not-allowed',
+                          borderColor: '#e2e8f0',
+                          opacity: 0.8
+                        }}
                         type="text"
                         value={fecha}
-                        onChange={(e) => setFecha(e.target.value)}
+                        readOnly
                       />
-                      <span style={styles.inputIcon}>📅</span>
+                      <span style={{...styles.inputIcon, opacity: 0.6}}>📅</span>
                     </div>
                   </div>
                   <div style={styles.formGroup}>
@@ -174,34 +276,31 @@ function Administrador() {
                   </div>
                 </div>
 
+                {/* SWITCH para Ordinaria / Extraordinaria */}
                 <div style={styles.formGroup}>
-                  <label style={styles.label}>PRIORIDAD</label>
-                  <div style={styles.radioGroup}>
-                    {PRIORIDADES.map((p) => (
-                      <label key={p} style={styles.radioLabel}>
-                        <input
-                          type="radio"
-                          name="prioridad"
-                          value={p}
-                          checked={prioridad === p}
-                          onChange={() => setPrioridad(p)}
-                          style={{ marginRight: 4 }}
-                        />
-                        <span
-                          style={{
-                            color:
-                              p === "Crítico"
-                                ? "#0e0e0e"
-                                : p === "Urgente"
-                                ? "#000000"
-                                : "#2d3748",
-                            fontWeight: prioridad === p ? 700 : 400,
-                          }}
-                        >
-                          {p}
-                        </span>
-                      </label>
-                    ))}
+                  <label style={styles.label}>TIPO DE COMPRA</label>
+                  <div style={styles.switchContainer}>
+                    <button
+                      style={{
+                        ...styles.switchOption,
+                        ...(tipoCompra === "Ordinaria" ? styles.switchOptionActive : {}),
+                      }}
+                      onClick={() => {
+                        setTipoCompra("Ordinaria");
+                        setErrorJustificacion("");
+                      }}
+                    >
+                      Ordinaria
+                    </button>
+                    <button
+                      style={{
+                        ...styles.switchOption,
+                        ...(tipoCompra === "Extraordinaria" ? styles.switchOptionActive : {}),
+                      }}
+                      onClick={() => setTipoCompra("Extraordinaria")}
+                    >
+                      Extraordinaria
+                    </button>
                   </div>
                 </div>
               </section>
@@ -210,19 +309,18 @@ function Administrador() {
               <section style={styles.card}>
                 <div style={styles.cardHeader}>
                   <span style={styles.cardIcon}>🛒</span>
-                  <span style={styles.cardTitle}>Datos de solicitud</span>
+                  <span style={styles.cardTitle}>Artículos solicitados</span>
                   <div style={{ display: "flex", gap: 8 }}>
-  <input
-    style={{ ...styles.input, width: 180 }}
-    value={nuevoArticulo}
-    onChange={(e) => setNuevoArticulo(e.target.value)}
-    placeholder="Nuevo artículo"
-  />
-
-  <button style={styles.addBtn} onClick={agregarArticulo}>
-    ＋ Agregar
-  </button>
-</div>
+                    <input
+                      style={{ ...styles.input, width: 180 }}
+                      value={nuevoArticulo}
+                      onChange={(e) => setNuevoArticulo(e.target.value)}
+                      placeholder="Nuevo artículo"
+                    />
+                    <button style={styles.addBtn} onClick={agregarArticulo}>
+                      ＋ Agregar
+                    </button>
+                  </div>
                 </div>
                 <table style={styles.table}>
                   <thead>
@@ -295,17 +393,43 @@ function Administrador() {
                 <div style={styles.cardHeader}>
                   <span style={styles.cardIcon}>📄</span>
                   <span style={styles.cardTitle}>Justificación de la compra</span>
+                  {tipoCompra === "Extraordinaria" && (
+                    <span style={styles.obligatorioBadge}>⚠️ Obligatorio</span>
+                  )}
                 </div>
                 <label style={{ ...styles.label, marginBottom: 6 }}>
                   EXPLICACIÓN DETALLADA DE LA COMPRA
+                  {tipoCompra === "Extraordinaria" && (
+                    <span style={{ color: "#e53e3e", marginLeft: 4 }}>*</span>
+                  )}
                 </label>
                 <textarea
-                  style={styles.textarea}
-                  placeholder="Describe por qué se necesita esta adquisición y el impacto en las operaciones..."
+                  id="justificacion-textarea"
+                  style={{
+                    ...styles.textarea,
+                    ...(errorJustificacion && tipoCompra === "Extraordinaria" && !justificacion.trim() 
+                      ? styles.textareaError 
+                      : {})
+                  }}
+                  placeholder={
+                    tipoCompra === "Extraordinaria"
+                      ? "⚠️ JUSTIFICACIÓN OBLIGATORIA - Explica detalladamente por qué se requiere una compra extraordinaria..."
+                      : "Describe por qué se necesita esta adquisición y el impacto en las operaciones..."
+                  }
                   value={justificacion}
-                  onChange={(e) => setJustificacion(e.target.value)}
+                  onChange={(e) => {
+                    setJustificacion(e.target.value);
+                    if (errorJustificacion && e.target.value.trim()) {
+                      setErrorJustificacion("");
+                    }
+                  }}
                   rows={4}
                 />
+                {errorJustificacion && tipoCompra === "Extraordinaria" && !justificacion.trim() && (
+                  <div style={styles.errorMensaje}>
+                    {errorJustificacion}
+                  </div>
+                )}
               </section>
             </div>
 
@@ -315,7 +439,7 @@ function Administrador() {
               <section style={styles.card}>
                 <div style={styles.cardHeader}>
                   <span style={styles.cardIcon}>✍️</span>
-                  <span style={styles.cardTitle}>Datos de solicitud</span>
+                  <span style={styles.cardTitle}>Firma y autorización</span>
                 </div>
                 <button
                   style={{
@@ -373,8 +497,23 @@ function Administrador() {
 
               {/* Botones de acción */}
               <div style={styles.actions}>
-                <button style={styles.btnSecondary}>Cancelar</button>
-                <button style={styles.btnPrimary}>Enviar requisición</button>
+                <button 
+                  style={styles.btnSecondary} 
+                  onClick={handleCancelar}
+                  disabled={isLoading}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  style={{
+                    ...styles.btnPrimary,
+                    ...(isLoading ? { opacity: 0.6, cursor: 'not-allowed' } : {})
+                  }} 
+                  onClick={handleEnviar}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Enviando...' : 'Enviar requisición'}
+                </button>
               </div>
             </div>
           </div>
@@ -384,7 +523,9 @@ function Administrador() {
   );
 }
 
+// ... (todos los estilos que ya tienes, se mantienen igual)
 const styles = {
+  // Mantén todos tus estilos existentes aquí
   page: {
     display: "flex",
     minHeight: "100vh",
@@ -543,6 +684,53 @@ const styles = {
     background: "#f7fafc",
     outline: "none",
     width: "100%",
+  },
+  switchContainer: {
+    display: "flex",
+    gap: 0,
+    marginTop: 4,
+    border: "1px solid #e2e8f0",
+    borderRadius: 6,
+    overflow: "hidden",
+    backgroundColor: "#f7fafc",
+  },
+  switchOption: {
+    flex: 1,
+    padding: "7px 12px",
+    border: "none",
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    background: "#f7fafc",
+    color: "#718096",
+  },
+  switchOptionActive: {
+    background: "#3182ce",
+    color: "#fff",
+  },
+  obligatorioBadge: {
+    background: "#fed7d7",
+    color: "#e53e3e",
+    borderRadius: 12,
+    padding: "2px 8px",
+    fontSize: 9,
+    fontWeight: 700,
+    marginLeft: 8,
+  },
+  textareaError: {
+    borderColor: "#fc8181",
+    backgroundColor: "#fff5f5",
+    boxShadow: "0 0 0 1px #fc8181",
+  },
+  errorMensaje: {
+    marginTop: 6,
+    fontSize: 11,
+    color: "#e53e3e",
+    fontWeight: 500,
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
   },
   radioGroup: { display: "flex", gap: 20, marginTop: 4 },
   radioLabel: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, cursor: "pointer" },

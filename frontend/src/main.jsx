@@ -3,10 +3,12 @@ import ReactDOM from "react-dom/client";
 import './index.css'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Administrador from "./pages/Administrador.jsx";
-import Cotizaciones  from "./pages/cotizaciones.jsx";
-import Ordendecompra from "./pages/ordendecompra.jsx";
-import Reporte       from "./pages/reporte.jsx";
+import Login from "./pages/login/login.jsx";
+
+import Administrador from "./pages/compras/requisiciones.jsx";
+import Cotizaciones  from "./pages/compras/cotizaciones.jsx";
+import Ordendecompra from "./pages/compras/ordendecompra.jsx";
+import Reporte       from "./pages/compras/reporte.jsx";
 
 import Inventario from "./pages/RecursosMateriales/inventario.jsx"
 import Entrada from "./pages/RecursosMateriales/entrada.jsx"
@@ -18,7 +20,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Administrador />} />
+        <Route path="/" element={<Login />} />
+        
+        <Route path="/requisiciones" element={<Administrador />} />
         <Route path="/cotizaciones" element={<Cotizaciones />} />
         <Route path="/orden" element={<Ordendecompra />} />
         <Route path="/reporte" element={<Reporte />} />

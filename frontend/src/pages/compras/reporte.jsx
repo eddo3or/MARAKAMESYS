@@ -80,7 +80,7 @@ export default function ReporteDeCompra() {
           
           <div style={styles.topTabs}>
             {[
-  { name: "Requisiciones", path: "/" },
+  { name: "Requisiciones", path: "/requisiciones" },
   { name: "Cotizaciones", path: "/cotizaciones" },
   { name: "Orden de compra", path: "/orden" },
   { name: "Reporte de compra", path: "/reporte" },

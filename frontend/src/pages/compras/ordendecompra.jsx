@@ -87,7 +87,7 @@ export default function OrdenDeCompra() {
             {["Requisiciones", "Cotizaciones", "Orden de compra", "Reporte de compra"].map((tab) => {
   let ruta = "#";
 
-  if (tab === "Requisiciones") ruta = "/";
+  if (tab === "Requisiciones") ruta = "/requisiciones";
   if (tab === "Cotizaciones") ruta = "/cotizaciones";
   if (tab === "Orden de compra") ruta = "/orden";
   if (tab === "Reporte de compra") ruta = "/reporte";
