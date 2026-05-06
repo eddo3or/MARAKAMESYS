@@ -14,7 +14,11 @@ import Inventario from "./pages/RecursosMateriales/inventario.jsx"
 import Entrada from "./pages/RecursosMateriales/entrada.jsx"
 import Salida from "./pages/RecursosMateriales/salida.jsx"
 
-//import Pago from "./pages/Finanzas/pago.jsx"
+import Pago from "./pages/Finanzas/pago.jsx"
+import Factura from "./pages/Finanzas/factura.jsx"
+
+import RH from "./pages/RH/rh.jsx"
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -30,6 +34,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/inventario" element={<Inventario />} />
         <Route path="/entrada" element={<Entrada />} />
         <Route path="/salida" element={<Salida />} />
+
+        <Route path="/pago" element={<Pago />} />
+        <Route path="/factura" element={<Factura />} />
+
+        <Route path="/rh" element={<RH />} />
+
 
        
 

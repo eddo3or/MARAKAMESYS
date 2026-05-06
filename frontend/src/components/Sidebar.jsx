@@ -10,7 +10,7 @@ export default function Sidebar({ styles }) {
       label: "Administrativo",
       icon: "🏢",
       children: [
-        { name: "Finanzas", path: "/finanzas" },
+        { name: "Finanzas", path: "/pago" },
         { name: "Recursos Humanos", path: "/rh" },
         { name: "Compras", path: "/requisiciones" },
         { name: "Recursos Materiales", path: "/inventario" },
