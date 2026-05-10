@@ -16,8 +16,12 @@ import Salida from "./pages/RecursosMateriales/salida.jsx"
 
 import Pago from "./pages/Finanzas/pago.jsx"
 import Factura from "./pages/Finanzas/factura.jsx"
+import Proveedores from "./pages/Finanzas/proveedores.jsx"
+import Cobro from "./pages/Finanzas/cobro.jsx"
+
 
 import RH from "./pages/RH/rh.jsx"
+import Personal from "./pages/RH/personal.jsx"
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -37,8 +41,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
         <Route path="/pago" element={<Pago />} />
         <Route path="/factura" element={<Factura />} />
+        <Route path="/proveedores" element={<Proveedores />} />
+        <Route path="/cobro" element={<Cobro />} />
+        
 
         <Route path="/rh" element={<RH />} />
+        <Route path="/personal" element={<Personal />} />
 
 
        

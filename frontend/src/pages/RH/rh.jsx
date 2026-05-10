@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../../components/Sidebar";
+import { Link } from "react-router-dom";
 
 const EMPLEADOS = [
   { id: 1, nombre: "Dr. Aristeo V.", cargo: "Director Médico", puesto: "DIRECTOR GENERAL", foto: null },
@@ -56,7 +57,22 @@ export default function RegistroIncidencia() {
       <main style={styles.main}>
         {/* Top Bar */}
         <header style={styles.topBar}>
-          <span style={styles.topBarTitle}>Registro de incidencia</span>
+          {[
+                                          { name: "Registro de incidencia", path: "/rh" },
+                                          { name: "Personal", path: "/personal" },
+                                        ].map((tab) => (
+                                          <Link
+                                            key={tab.name}
+                                            to={tab.path}
+                                            style={{
+                                              ...styles.tab,
+                                              ...(tab.name === "Registro de incidencia" ? styles.tabActive : {}),
+                                              textDecoration: "none"
+                                            }}
+                                          >
+                                            {tab.name}
+                                          </Link>
+                                        ))}
         </header>
 
         {/* Content */}
@@ -238,6 +254,23 @@ export default function RegistroIncidencia() {
 }
 
 const styles = {
+  tab: {
+  background: "none",
+  border: "none",
+  padding: "14px 18px",
+  cursor: "pointer",
+  fontSize: 13,
+  color: "#718096",
+  borderBottom: "2px solid transparent",
+  whiteSpace: "nowrap",
+  fontWeight: 500
+},
+
+tabActive: {
+  color: "#3182ce",
+  borderBottom: "2px solid #3182ce",
+  fontWeight: 700
+},
   page: {
     display: "flex", minHeight: "100vh",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -249,7 +282,7 @@ const styles = {
   },
   logo: { padding: "20px 16px 14px", borderBottom: "1px solid #2d3748", marginBottom: 8 },
   logoText: { display: "block", fontWeight: 800, fontSize: 16, letterSpacing: 2, color: "#63b3ed" },
-  logoSub: { display: "block", fontSize: 7.5, letterSpacing: 0.8, color: "#718096", marginTop: 2, textTransform: "uppercase" },
+  logoSub: { display: "block", fontSize: 8, letterSpacing: 0.8, color: "#718096", marginTop: 2, textTransform: "uppercase" },
   nav: { flex: 1 },
   navSection: { padding: "10px 16px 6px", fontSize: 11, fontWeight: 700, color: "#a0aec0", letterSpacing: 0.5, textTransform: "uppercase" },
   navItem: { padding: "7px 16px 7px 24px", cursor: "pointer", fontSize: 12, color: "#cbd5e0" },
@@ -262,7 +295,7 @@ const styles = {
   main: { flex: 1, display: "flex", flexDirection: "column" },
   topBar: {
     background: "#fff", borderBottom: "1px solid #e2e8f0",
-    display: "flex", alignItems: "center", padding: "0 24px", height: 48, flexShrink: 0,
+    display: "flex", alignItems: "center", padding: "0 24px", height: 48, gap: 4, flexShrink: 0,
   },
   topBarTitle: { fontSize: 13, fontWeight: 600, color: "#3182ce" },
 

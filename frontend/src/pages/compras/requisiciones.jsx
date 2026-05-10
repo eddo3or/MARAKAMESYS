@@ -523,9 +523,8 @@ export default function Requisiciones() {
   );
 }
 
-// ... (todos los estilos que ya tienes, se mantienen igual)
 const styles = {
-  // Mantén todos tus estilos existentes aquí
+
   page: {
     display: "flex",
     minHeight: "100vh",
