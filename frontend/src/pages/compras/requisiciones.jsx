@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 
-
 const TIPO_COMPRA = ["Ordinaria", "Extraordinaria"];
 const DEPARTAMENTOS = ["Clínico", "Administrativo", "Clinica", "Medica", "Admisiones"];
 const UNIDADES = ["Piez", "Caja", "Litro", "Kg", "Metro"];
@@ -14,8 +13,7 @@ const FLUJO_APROBACION = [
   { id: 4, label: "Orden de compra", done: false },
 ];
 
-const initialArticulos = [
-];
+const initialArticulos = [];
 
 // Función para obtener la fecha actual en formato YYYY-MM-DD (para el backend)
 const getFechaActualBackend = () => {
@@ -46,7 +44,11 @@ const generarFolio = () => {
 };
 
 export default function Requisiciones() {
-  const [nuevoArticulo, setNuevoArticulo] = useState("");
+  // Estados para el nuevo artículo
+  const [nuevoNombre, setNuevoNombre] = useState("");
+  const [nuevaDescripcion, setNuevaDescripcion] = useState("");
+  const [nuevoPrecio, setNuevoPrecio] = useState("");
+
   const [fecha, setFecha] = useState(getFechaActualDisplay());
   const [departamento, setDepartamento] = useState("Clínico");
   const [tipoCompra, setTipoCompra] = useState("Ordinaria");
@@ -57,31 +59,41 @@ export default function Requisiciones() {
   const [isLoading, setIsLoading] = useState(false);
   const [usuario, setUsuario] = useState(null);
 
-
   useEffect(() => {
-  const user = localStorage.getItem("user");
+    const user = localStorage.getItem("user");
 
-  if (user && user !== "undefined") {
-    try {
-      setUsuario(JSON.parse(user));
-    } catch (error) {
-      console.error("Error parseando user:", error);
-      localStorage.removeItem("user"); // limpia dato corrupto
+    if (user && user !== "undefined") {
+      try {
+        setUsuario(JSON.parse(user));
+      } catch (error) {
+        console.error("Error parseando user:", error);
+        localStorage.removeItem("user"); // limpia dato corrupto
+      }
     }
-  }
-}, []);
-
-
+  }, []);
 
   const agregarArticulo = () => {
-    if (!nuevoArticulo.trim()) return;
+    if (!nuevoNombre.trim()) {
+      alert("El nombre del artículo es obligatorio");
+      return;
+    }
 
     setArticulos([
       ...articulos,
-      { id: Date.now(), descripcion: nuevoArticulo, cantidad: 1, unidad: "Piez" },
+      {
+        id: Date.now(),
+        nombre: nuevoNombre,
+        descripcion: nuevaDescripcion,
+        cantidad: 1,
+        unidad: "Piez",
+        precio: parseFloat(nuevoPrecio) || 0,
+      },
     ]);
 
-    setNuevoArticulo("");
+    // Limpiar formulario
+    setNuevoNombre("");
+    setNuevaDescripcion("");
+    setNuevoPrecio("");
   };
 
   const actualizarArticulo = (id, campo, valor) => {
@@ -108,81 +120,84 @@ export default function Requisiciones() {
     setJustificacion("");
     setFirmado(false);
     setErrorJustificacion("");
-    setNuevoArticulo("");
+    setNuevoNombre("");
+    setNuevaDescripcion("");
+    setNuevoPrecio("");
   };
 
   const handleEnviar = async () => {
-  // Validaciones (las tuyas intactas)
-  if (tipoCompra === "Extraordinaria" && !justificacion.trim()) {
-    setErrorJustificacion("⚠️ La justificación es obligatoria para compras extraordinarias");
-    document.getElementById('justificacion-textarea')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
-  }
-
-  if (articulos.length === 0) {
-    alert("⚠️ Debes agregar al menos un artículo");
-    return;
-  }
-
-  if (!firmado) {
-    alert("⚠️ Debes subir la firma del solicitante autorizado");
-    return;
-  }
-
-  setErrorJustificacion("");
-  setIsLoading(true);
-
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    // 🔥 Tu objeto original (NO lo rompemos)
-    const requisicionData = {
-      folio: generarFolio(),
-      id_solicitante: user?.id, // 👈 dinámico
-      fecha_emision: getFechaActualBackend(),
-      tipo_compra: tipoCompra,
-      justificacion: justificacion,
-      estatus: "Pendiente",
-
-      // 👇 NUEVO (esto es lo que te faltaba)
-      articulos: articulos.map(a => ({
-        descripcion: a.descripcion,
-        cantidad: a.cantidad,
-        unidad: a.unidad
-      }))
-    };
-
-    console.log("ENVIANDO 👉", requisicionData);
-
-    const response = await fetch("http://localhost:3000/api/requisiciones", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(requisicionData)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Error al enviar requisición");
+    // Validaciones
+    if (tipoCompra === "Extraordinaria" && !justificacion.trim()) {
+      setErrorJustificacion("⚠️ La justificación es obligatoria para compras extraordinarias");
+      document.getElementById('justificacion-textarea')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
     }
 
-    alert(" Requisición enviada correctamente");
+    if (articulos.length === 0) {
+      alert("⚠️ Debes agregar al menos un artículo");
+      return;
+    }
 
-    
-    setArticulos([]);
-    setJustificacion("");
-    setFirmado(false);
+    if (!firmado) {
+      alert("⚠️ Debes subir la firma del solicitante autorizado");
+      return;
+    }
 
-  } catch (error) {
-    console.error(error);
-    alert("Error al enviar requisición");
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setErrorJustificacion("");
+    setIsLoading(true);
+
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      const requisicionData = {
+        folio: generarFolio(),
+        id_solicitante: user?.id,
+        fecha_emision: getFechaActualBackend(),
+        tipo_compra: tipoCompra,
+        justificacion: justificacion,
+        estatus: "Pendiente",
+
+        // Envío de los artículos con los nuevos campos
+        articulos: articulos.map(a => ({
+          nombre: a.nombre,
+          descripcion: a.descripcion,
+          cantidad: a.cantidad,
+          unidad: a.unidad,
+          precio: a.precio
+        }))
+      };
+
+      console.log("ENVIANDO ", requisicionData);
+
+      const response = await fetch("http://localhost:3000/api/requisiciones", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requisicionData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error al enviar requisición");
+      }
+
+      alert("✅ Requisición enviada correctamente");
+
+      // Resetear formulario
+      setArticulos([]);
+      setJustificacion("");
+      setFirmado(false);
+
+    } catch (error) {
+      console.error(error);
+      alert("❌ Error al enviar requisición");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCancelar = () => {
     if (window.confirm("¿Estás seguro de que deseas cancelar? Se perderán todos los datos.")) {
@@ -300,87 +315,119 @@ export default function Requisiciones() {
                 </div>
               </section>
 
-              {/* Tabla de artículos */}
+              {/* Tabla de artículos - MODIFICADA */}
               <section style={styles.card}>
                 <div style={styles.cardHeader}>
                   <span style={styles.cardIcon}>🛒</span>
                   <span style={styles.cardTitle}>Artículos solicitados</span>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input
-                      style={{ ...styles.input, width: 180 }}
-                      value={nuevoArticulo}
-                      onChange={(e) => setNuevoArticulo(e.target.value)}
-                      placeholder="Nuevo artículo"
-                    />
-                    <button style={styles.addBtn} onClick={agregarArticulo}>
-                      ＋ Agregar
-                    </button>
-                  </div>
                 </div>
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th style={styles.th}>Descripción del artículo/Servicio</th>
-                      <th style={{ ...styles.th, width: 100 }}>CANT.</th>
-                      <th style={{ ...styles.th, width: 110 }}>U.MEDIA</th>
-                      <th style={{ ...styles.th, width: 40 }}></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {articulos.map((art) => (
-                      <tr key={art.id}>
-                        <td style={styles.td}>
-                          <input
-                            style={styles.tableInput}
-                            value={art.descripcion}
-                            onChange={(e) =>
-                              actualizarArticulo(art.id, "descripcion", e.target.value)
-                            }
-                            placeholder="Descripción del artículo/servicio"
-                          />
-                        </td>
-                        <td style={styles.td}>
-                          <div style={styles.cantControl}>
-                            <button
-                              style={styles.cantBtn}
-                              onClick={() => cambiarCantidad(art.id, -1)}
-                            >
-                              −
-                            </button>
-                            <span style={styles.cantNum}>{art.cantidad}</span>
-                            <button
-                              style={styles.cantBtn}
-                              onClick={() => cambiarCantidad(art.id, 1)}
-                            >
-                              ＋
-                            </button>
-                          </div>
-                        </td>
-                        <td style={styles.td}>
-                          <select
-                            style={styles.tableSelect}
-                            value={art.unidad}
-                            onChange={(e) =>
-                              actualizarArticulo(art.id, "unidad", e.target.value)
-                            }
-                          >
-                            {UNIDADES.map((u) => (
-                              <option key={u}>{u}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td style={styles.td}>
-                          <button
-                            style={styles.deleteBtn}
-                            onClick={() => eliminarArticulo(art.id)}
-                          >
-                            🗑
-                          </button>
-                        </td>
+
+                {/* Formulario para agregar artículo */}
+                <div style={styles.nuevoArticuloForm}>
+                  <div style={{ flex: 2, minWidth: '150px' }}>
+                    <input
+                      style={styles.input}
+                      value={nuevoNombre}
+                      onChange={(e) => setNuevoNombre(e.target.value)}
+                      placeholder="Nombre del artículo"
+                    />
+                  </div>
+
+                  <button style={styles.addBtn} onClick={agregarArticulo}>
+                    ＋ Agregar
+                  </button>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={styles.table}>
+                    <thead>
+                      <tr>
+                        <th style={styles.th}>Artículo</th>
+                        <th style={styles.th}>Descripción</th>
+                        <th style={{ ...styles.th, width: 80 }}>CANT.</th>
+                        <th style={{ ...styles.th, width: 100 }}>U.MEDIA</th>
+                        <th style={{ ...styles.th, width: 100 }}>PRECIO</th>
+                        <th style={{ ...styles.th, width: 40 }}></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {articulos.map((art) => (
+                        <tr key={art.id}>
+                          <td style={styles.td}>
+                            <input
+                              style={styles.tableInput}
+                              value={art.nombre}
+                              onChange={(e) =>
+                                actualizarArticulo(art.id, "nombre", e.target.value)
+                              }
+                              placeholder="Nombre del artículo/servicio"
+                            />
+                          </td>
+                          <td style={styles.td}>
+                            <input
+                              style={styles.tableInput}
+                              value={art.descripcion}
+                              onChange={(e) =>
+                                actualizarArticulo(art.id, "descripcion", e.target.value)
+                              }
+                              placeholder="Descripción detallada..."
+                            />
+                          </td>
+                          <td style={styles.td}>
+                            <div style={styles.cantControl}>
+                              <button
+                                style={styles.cantBtn}
+                                onClick={() => cambiarCantidad(art.id, -1)}
+                              >
+                                −
+                              </button>
+                              <span style={styles.cantNum}>{art.cantidad}</span>
+                              <button
+                                style={styles.cantBtn}
+                                onClick={() => cambiarCantidad(art.id, 1)}
+                              >
+                                ＋
+                              </button>
+                            </div>
+                          </td>
+                          <td style={styles.td}>
+                            <select
+                              style={styles.tableSelect}
+                              value={art.unidad}
+                              onChange={(e) =>
+                                actualizarArticulo(art.id, "unidad", e.target.value)
+                              }
+                            >
+                              {UNIDADES.map((u) => (
+                                <option key={u}>{u}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td style={styles.td}>
+                            <input
+                              type="number"
+                              step="0.01"
+                              style={styles.tableInput}
+                              value={art.precio}
+                              onChange={(e) =>
+                                actualizarArticulo(art.id, "precio", parseFloat(e.target.value) || 0)
+                              }
+                              placeholder="0.00"
+                            />
+                          </td>
+                          <td style={styles.td}>
+                            <button
+                              style={styles.deleteBtn}
+                              onClick={() => eliminarArticulo(art.id)}
+                            >
+                              🗑
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </section>
 
               {/* Justificación */}
@@ -402,8 +449,8 @@ export default function Requisiciones() {
                   id="justificacion-textarea"
                   style={{
                     ...styles.textarea,
-                    ...(errorJustificacion && tipoCompra === "Extraordinaria" && !justificacion.trim() 
-                      ? styles.textareaError 
+                    ...(errorJustificacion && tipoCompra === "Extraordinaria" && !justificacion.trim()
+                      ? styles.textareaError
                       : {})
                   }}
                   placeholder={
@@ -451,12 +498,11 @@ export default function Requisiciones() {
                     <span style={styles.verificadoBadge}>✔ Verificado</span>
                   </div>
                   <div style={styles.solicitanteNombre}>
-  {usuario ? usuario.nombre : "Cargando..."}
-</div>
-
-<div style={styles.solicitanteCargo}>
-  {usuario?.puesto || "Usuario del sistema"}
-</div>
+                    {usuario ? usuario.nombre : "Cargando..."}
+                  </div>
+                  <div style={styles.solicitanteCargo}>
+                    {usuario?.puesto || "Usuario del sistema"}
+                  </div>
                 </div>
               </section>
 
@@ -497,18 +543,18 @@ export default function Requisiciones() {
 
               {/* Botones de acción */}
               <div style={styles.actions}>
-                <button 
-                  style={styles.btnSecondary} 
+                <button
+                  style={styles.btnSecondary}
                   onClick={handleCancelar}
                   disabled={isLoading}
                 >
                   Cancelar
                 </button>
-                <button 
+                <button
                   style={{
                     ...styles.btnPrimary,
                     ...(isLoading ? { opacity: 0.6, cursor: 'not-allowed' } : {})
-                  }} 
+                  }}
                   onClick={handleEnviar}
                   disabled={isLoading}
                 >
@@ -522,6 +568,8 @@ export default function Requisiciones() {
     </div>
   );
 }
+
+
 
 const styles = {
 

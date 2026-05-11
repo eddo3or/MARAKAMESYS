@@ -161,39 +161,7 @@ export default function SalidaAlmacen() {
                   />
                 </div>
               </div>
-
               {/* Motivo de salida */}
-              <div style={styles.card}>
-                <div style={styles.motivoTitle}>Motivo de salida</div>
-                <div style={styles.motivoList}>
-                  {MOTIVOS.map((m) => (
-                    <button
-                      key={m.id}
-                      style={{
-                        ...styles.motivoBtn,
-                        ...(motivo === m.id ? styles.motivoBtnActive : {}),
-                      }}
-                      onClick={() => setMotivo(m.id)}
-                    >
-                      <span style={{
-                        ...styles.motivoBtnIcon,
-                        color: motivo === m.id ? "#3182ce" : "#718096",
-                      }}>
-                        {m.icon}
-                      </span>
-                      <div style={styles.motivoBtnText}>
-                        <span style={{
-                          ...styles.motivoBtnLabel,
-                          color: motivo === m.id ? "#2b6cb0" : "#2d3748",
-                        }}>
-                          {m.label}
-                        </span>
-                        <span style={styles.motivoBtnSub}>{m.sub}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* RIGHT */}

@@ -210,15 +210,25 @@ export default function EntradaAlmacen() {
     </select>
   </td>
 
+  
   {/* FECHA CADUCIDAD */}
-  <td style={styles.td}>
-    <input
-      type="date"
-      value={row.caducidad}
-      onChange={(e) => actualizarCampo(row.id, "caducidad", e.target.value)}
-      style={styles.input}
-    />
-  </td>
+<td style={styles.td}>
+  <input
+    type="date"
+    value={row.caducidad}
+    onChange={(e) => actualizarCampo(row.id, "caducidad", e.target.value)}
+    disabled={row.categoria !== "Medicamentos"}
+    style={{
+      ...styles.input,
+      ...(row.categoria !== "Medicamentos" ? {
+        backgroundColor: '#edf2f7',
+        color: '#a0aec0',
+        cursor: 'not-allowed',
+        opacity: 0.7
+      } : {})
+    }}
+  />
+</td>
 
   <td style={styles.td}>{row.cantEsperada}</td>
 
